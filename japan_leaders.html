@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日本の重要人物 フラッシュカード</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: #f5f4f0; color: #1a1a18; min-height: 100vh; }
+
+header { background: #fff; border-bottom: 0.5px solid #dddbd2; padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem; position: sticky; top: 0; z-index: 10; }
+header h1 { font-size: 16px; font-weight: 700; letter-spacing: 0.03em; }
+header p { font-size: 12px; color: #888; }
+
+.controls { padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: #f5f4f0; position: sticky; top: 57px; z-index: 9; border-bottom: 0.5px solid #dddbd2; }
+.search { flex: 1; min-width: 180px; font-size: 13px; padding: 7px 12px; border-radius: 8px; border: 0.5px solid #ccc; background: #fff; font-family: inherit; }
+.filter-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 0.5px solid #ccc; background: #fff; color: #555; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.filter-btn.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
+.mode-toggle { margin-left: auto; display: flex; gap: 6px; }
+.mode-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 0.5px solid #ccc; background: #fff; color: #555; cursor: pointer; font-family: inherit; }
+.mode-btn.active { background: #1a1a18; color: #fff; border-color: #1a1a18; }
+
+main { padding: 1.5rem; }
+.stats { font-size: 12px; color: #888; margin-bottom: 1rem; }
+
+/* カードグリッド */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+
+.card { background: #fff; border: 0.5px solid #dddbd2; border-radius: 14px; padding: 1.25rem; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; position: relative; }
+.card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+/* ★ 写真エリア ★ */
+.photo-wrap { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin-bottom: 10px; border: 2px solid #eee; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 700; }
+.photo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+.cat-label { font-size: 11px; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-bottom: 6px; }
+.name-ja { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.name-en { font-size: 11px; color: #888; margin-bottom: 6px; }
+.role { font-size: 12px; color: #555; line-height: 1.5; }
+.tags { margin-top: 8px; }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: #f0f0ee; color: #666; display: inline-block; margin: 2px 2px 0 0; }
+.flip-hint { font-size: 10px; color: #bbb; margin-top: 10px; text-align: right; }
+
+.card .back { display: none; }
+.card.flipped .front { display: none; }
+.card.flipped .back { display: block; }
+.profile-text { font-size: 12px; color: #333; line-height: 1.8; margin-top: 8px; }
+.org-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+.born-label { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+/* クイズ */
+.quiz-wrap { display: flex; justify-content: center; padding: 2rem 0; }
+.quiz-card { background: #fff; border: 0.5px solid #dddbd2; border-radius: 16px; padding: 2rem; width: 100%; max-width: 500px; }
+.progress-bar { height: 4px; background: #eee; border-radius: 2px; margin-bottom: 1.5rem; }
+.progress-fill { height: 100%; background: #1D9E75; border-radius: 2px; transition: width 0.3s; }
+.quiz-counter { font-size: 12px; color: #888; margin-bottom: 0.5rem; }
+.quiz-question { font-size: 18px; font-weight: 700; color: #1a1a18; margin-bottom: 6px; line-height: 1.5; }
+.quiz-sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quiz-opt { font-size: 13px; padding: 12px 8px; border-radius: 10px; border: 0.5px solid #ddd; background: #fff; color: #1a1a18; cursor: pointer; font-family: inherit; transition: all 0.15s; text-align: center; }
+.quiz-opt:hover { background: #f5f4f0; }
+.quiz-opt.correct { background: #E1F5EE; border-color: #1D9E75; color: #085041; font-weight: 700; }
+.quiz-opt.wrong { background: #FCEBEB; border-color: #E24B4A; color: #501313; }
+.quiz-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; }
+.quiz-score-text { font-size: 12px; color: #888; }
+.next-btn { font-size: 13px; padding: 8px 18px; border-radius: 8px; border: 0.5px solid #ccc; background: #1a1a18; color: #fff; cursor: pointer; font-family: inherit; display: none; }
+.restart-btn { font-size: 14px; padding: 10px 24px; border-radius: 10px; border: none; background: #1a1a18; color: #fff; cursor: pointer; font-family: inherit; margin-top: 1rem; width: 100%; }
+
+/* 凡例 */
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #666; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🇯🇵 日本の重要人物</h1>
+    <p>政治家・経営者・研究者・リーダー — フラッシュカード学習</p>
+  </div>
+</header>
+
+<div class="controls">
+  <input class="search" type="text" placeholder="名前・キーワードで検索..." id="search" />
+  <button class="filter-btn active" data-cat="all">すべて</button>
+  <button class="filter-btn" data-cat="政治家">🏛 政治家</button>
+  <button class="filter-btn" data-cat="経営者">💼 経営者</button>
+  <button class="filter-btn" data-cat="研究者">🔬 研究者</button>
+  <button class="filter-btn" data-cat="リーダー">🌐 リーダー</button>
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-card">📇 カード</button>
+    <button class="mode-btn" id="btn-quiz">🧠 クイズ</button>
+  </div>
+</div>
+
+<main>
+  <!-- カードモード -->
+  <div id="card-mode">
+    <p class="stats" id="stats"></p>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <!-- クイズモード -->
+  <div id="quiz-mode" style="display:none">
+    <div class="quiz-wrap">
+      <div class="quiz-card">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <p class="quiz-counter" id="quiz-counter"></p>
+        <p class="quiz-question" id="quiz-q"></p>
+        <p class="quiz-sub" id="quiz-hint"></p>
+        <div class="quiz-options" id="quiz-opts"></div>
+        <div class="quiz-footer">
+          <span class="quiz-score-text" id="quiz-score-text">正解: 0</span>
+          <button class="next-btn" id="next-btn">次へ →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// =====================================================
+// ★ 人物データ ★
+// photoには画像ファイル名を入れてください（例: "ishiba.jpg"）
+// 写真をHTMLファイルと同じフォルダに置いて、ファイル名を記入するだけでOK！
+// 写真がない場合はphoto:""のままでイニシャルが表示されます
+// =====================================================
+const people = [
+  {
+    name:"石破 茂", nameEn:"Shigeru Ishiba", cat:"政治家",
+    role:"内閣総理大臣（第102代）", org:"自由民主党", born:"1957年生",
+    photo:"", // ← ここに写真ファイル名を入れる（例: "ishiba.jpg"）
+    tags:["安全保障","地方創生","防衛族"],
+    profile:"2024年10月就任。鳥取県出身。防衛大臣・農林水産大臣など歴任。自民党内でたびたび執行部と対立し、党内野党的存在として知られた。"
+  },
+  {
+    name:"岸田 文雄", nameEn:"Fumio Kishida", cat:"政治家",
+    role:"前内閣総理大臣（第100・101代）", org:"自由民主党", born:"1957年生",
+    photo:"",
+    tags:["新しい資本主義","安保3文書","宏池会"],
+    profile:"2021〜2024年首相。広島県出身。外務大臣など歴任。核軍縮・経済安保に注力。2024年退任。"
+  },
+  {
+    name:"野田 佳彦", nameEn:"Yoshihiko Noda", cat:"政治家",
+    role:"立憲民主党代表", org:"立憲民主党", born:"1957年生",
+    photo:"",
+    tags:["財政規律","消費増税","野党"],
+    profile:"2024年9月に立憲民主党代表に就任。前首相（2011-2012年）。千葉県出身。増税断行で政権を失った経緯を持つ実務型政治家。"
+  },
+  {
+    name:"玉木 雄一郎", nameEn:"Yuichiro Tamaki", cat:"政治家",
+    role:"国民民主党代表", org:"国民民主党", born:"1969年生",
+    photo:"",
+    tags:["手取り増","103万円の壁","中道"],
+    profile:"香川県出身。財務省出身の経済通。「103万円の壁」撤廃を旗印に2024年衆院選で躍進。連立・協力の焦点となる。"
+  },
+  {
+    name:"河野 太郎", nameEn:"Taro Kono", cat:"政治家",
+    role:"デジタル大臣・衆議院議員", org:"自由民主党", born:"1963年生",
+    photo:"",
+    tags:["デジタル","マイナンバー","改革派"],
+    profile:"神奈川県出身。マイナンバー普及・行政DXを推進。SNSでの発信力で知られる。外務大臣・防衛大臣も歴任。"
+  },
+  {
+    name:"上川 陽子", nameEn:"Yoko Kamikawa", cat:"政治家",
+    role:"衆議院議員・元外務大臣", org:"自由民主党", born:"1953年生",
+    photo:"",
+    tags:["外交","女性閣僚","法務"],
+    profile:"静岡県出身。2023〜2024年外務大臣。ハーバード大大学院修了。法務大臣として死刑執行を複数回命じたことでも知られる。"
+  },
+  {
+    name:"孫 正義", nameEn:"Masayoshi Son", cat:"経営者",
+    role:"ソフトバンクグループ会長兼社長", org:"ソフトバンクグループ", born:"1957年生",
+    photo:"",
+    tags:["AI","Vision Fund","通信"],
+    profile:"佐賀県出身・在日韓国人3世。UC Berkeley卒。ビジョンファンドで世界規模のAI・テック投資を展開。ARM保有でAI半導体にも影響力。"
+  },
+  {
+    name:"柳井 正", nameEn:"Tadashi Yanai", cat:"経営者",
+    role:"ファーストリテイリング会長兼社長", org:"ファーストリテイリング", born:"1949年生",
+    photo:"",
+    tags:["ユニクロ","SPA","グローバル"],
+    profile:"山口県出身。早稲田大卒。ユニクロをグローバルブランドに育て、日本富豪ランキング首位常連。「服を変え、常識を変え、世界を変えていく」"
+  },
+  {
+    name:"永守 重信", nameEn:"Shigenobu Nagamori", cat:"経営者",
+    role:"ニデック（日本電産）創業者・会長", org:"ニデック", born:"1944年生",
+    photo:"",
+    tags:["EV","モーター","M&A"],
+    profile:"京都府出身。1973年創業。モーター世界最大手。EV向け駆動モーターに注力。「すぐやる、必ずやる、できるまでやる」が信条。"
+  },
+  {
+    name:"前澤 友作", nameEn:"Yusaku Maezawa", cat:"経営者",
+    role:"ZOZO創業者・実業家", org:"ZOZO / MZ Inc.", born:"1975年生",
+    photo:"",
+    tags:["宇宙","アート","ファッション"],
+    profile:"千葉県出身。ZOZOTOWNを創業し日本最大のファッションECに。2023年宇宙旅行（ISS）を実施。アート支援でも知られる。"
+  },
+  {
+    name:"川上 量生", nameEn:"Nobuo Kawakami", cat:"経営者",
+    role:"ドワンゴ創業者・取締役", org:"ドワンゴ / カドカワ", born:"1968年生",
+    photo:"",
+    tags:["ニコニコ","コンテンツ","AI教育"],
+    profile:"大阪府出身。京都大卒。ニコニコ動画を創設し日本のネット文化を牽引。現在はAIを活用した教育事業にも注力。"
+  },
+  {
+    name:"山中 伸弥", nameEn:"Shinya Yamanaka", cat:"研究者",
+    role:"京都大学特別教授・iPS細胞研究財団理事長", org:"京都大学", born:"1962年生",
+    photo:"",
+    tags:["ノーベル賞","iPS細胞","再生医療"],
+    profile:"大阪府出身。2012年ノーベル生理学・医学賞受賞。iPS細胞の発見で再生医療の未来を切り拓く。"
+  },
+  {
+    name:"本庶 佑", nameEn:"Tasuku Honjo", cat:"研究者",
+    role:"京都大学特別教授", org:"京都大学", born:"1942年生",
+    photo:"",
+    tags:["ノーベル賞","免疫チェックポイント","がん治療"],
+    profile:"京都府出身。PD-1の発見でがん免疫療法（オプジーボ）の基礎を確立。2018年ノーベル生理学・医学賞受賞。"
+  },
+  {
+    name:"天野 浩", nameEn:"Hiroshi Amano", cat:"研究者",
+    role:"名古屋大学教授", org:"名古屋大学", born:"1960年生",
+    photo:"",
+    tags:["ノーベル賞","青色LED","半導体"],
+    profile:"静岡県出身。青色LEDの実用化に成功。2014年ノーベル物理学賞受賞。省エネ照明革命の立役者。"
+  },
+  {
+    name:"真鍋 淑郎", nameEn:"Syukuro Manabe", cat:"研究者",
+    role:"プリンストン大学上席研究員", org:"プリンストン大学", born:"1931年生",
+    photo:"",
+    tags:["ノーベル賞","気候モデル","地球温暖化"],
+    profile:"愛媛県出身・米国籍。大気と海洋の相互作用を数値モデル化し地球温暖化予測の基礎を築く。2021年ノーベル物理学賞受賞。"
+  },
+  {
+    name:"緒方 貞子", nameEn:"Sadako Ogata", cat:"リーダー",
+    role:"元国連難民高等弁務官", org:"UNHCR", born:"1927年生（2019年逝去）",
+    photo:"",
+    tags:["人道支援","難民","国際機関"],
+    profile:"東京都出身。難民支援の象徴的存在。ルワンダ・旧ユーゴ紛争などで人道介入を主導。「難民に顔を」の言葉で知られる。"
+  },
+  {
+    name:"安野 貴博", nameEn:"Takahiro Anno", cat:"リーダー",
+    role:"AI研究者・実業家・政治活動家", org:"AIデモクラシー", born:"1990年生",
+    photo:"",
+    tags:["AI政策","デジタル民主主義","起業家"],
+    profile:"東京大卒。2024年東京都知事選でAIを活用した政策立案を掲げ出馬。「ブロードリスニング」などテクノロジーと民主主義の融合を提唱。"
+  },
+  {
+    name:"落合 陽一", nameEn:"Yoichi Ochiai", cat:"リーダー",
+    role:"筑波大学准教授・メディアアーティスト", org:"筑波大学 / Pixie Dust Technologies", born:"1987年生",
+    photo:"",
+    tags:["テクノロジー","アート","未来構想"],
+    profile:"東京大卒・東京大博士。音波で物体を浮かせる研究などで注目。「デジタルネイチャー」概念を提唱。政策・文化・テクノロジーを横断する論客。"
+  },
+  {
+    name:"渋澤 健", nameEn:"Ken Shibusawa", cat:"リーダー",
+    role:"コモンズ投信会長", org:"コモンズ投信", born:"1961年生",
+    photo:"",
+    tags:["ESG","資本市場","長期投資"],
+    profile:"渋沢栄一の5世孫。シティバンク等を経てコモンズ投信を創設。社会的価値と経済的価値の両立を訴える。"
+  },
+  {
+    name:"村上 臣", nameEn:"Shin Murakami", cat:"リーダー",
+    role:"LinkedIn日本代表", org:"LinkedIn", born:"1975年生",
+    photo:"",
+    tags:["キャリア","転職","デジタル人材"],
+    profile:"ヤフー執行役員などを経て2017年よりLinkedIn日本代表。日本のプロフェッショナルのキャリア観変革を推進。"
+  }
+];
+
+// カテゴリ設定
+const catConfig = {
+  "政治家": { bg:"#E6F1FB", text:"#0C447C", avatarBg:"#B5D4F4", avatarText:"#042C53" },
+  "経営者": { bg:"#FAEEDA", text:"#633806", avatarBg:"#FAC775", avatarText:"#412402" },
+  "研究者": { bg:"#E1F5EE", text:"#085041", avatarBg:"#9FE1CB", avatarText:"#04342C" },
+  "リーダー":{ bg:"#EEEDFE", text:"#3C3489", avatarBg:"#CECBF6", avatarText:"#26215C" },
+};
+
+let currentCat = "all", searchQ = "";
+
+function getInitials(name) { return name.replace(/\s/g,"").slice(0,2); }
+
+function renderCards() {
+  const filtered = people.filter(p => {
+    const matchCat = currentCat === "all" || p.cat === currentCat;
+    const q = searchQ.toLowerCase();
+    const matchSearch = !q || p.name.includes(q) || p.nameEn.toLowerCase().includes(q) || p.role.includes(q) || p.org.includes(q) || p.tags.some(t=>t.includes(q));
+    return matchCat && matchSearch;
+  });
+  document.getElementById("stats").textContent = `${filtered.length}人を表示中（タップでプロフィール表示）`;
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  filtered.forEach(p => {
+    const c = catConfig[p.cat];
+    const div = document.createElement("div");
+    div.className = "card";
+
+    // 写真 or イニシャル
+    const photoHTML = p.photo
+      ? `<div class="photo-wrap"><img src="${p.photo}" alt="${p.name}" /></div>`
+      : `<div class="photo-wrap" style="background:${c.avatarBg};color:${c.avatarText}">${getInitials(p.name)}</div>`;
+
+    div.innerHTML = `
+      <div class="front">
+        ${photoHTML}
+        <span class="cat-label" style="background:${c.bg};color:${c.text}">${p.cat}</span>
+        <p class="name-ja">${p.name}</p>
+        <p class="name-en">${p.nameEn}</p>
+        <p class="role">${p.role}</p>
+        <div class="tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+        <p class="flip-hint">タップ → プロフィール</p>
+      </div>
+      <div class="back">
+        ${photoHTML}
+        <span class="cat-label" style="background:${c.bg};color:${c.text}">${p.cat}</span>
+        <p class="name-ja" style="margin-top:6px">${p.name}</p>
+        <p class="org-label">${p.org}</p>
+        <p class="born-label">${p.born}</p>
+        <p class="profile-text">${p.profile}</p>
+        <p class="flip-hint">タップ → 戻る</p>
+      </div>`;
+    div.addEventListener("click", () => div.classList.toggle("flipped"));
+    grid.appendChild(div);
+  });
+}
+
+// フィルター
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentCat = btn.dataset.cat;
+    renderCards();
+  });
+});
+document.getElementById("search").addEventListener("input", e => { searchQ = e.target.value; renderCards(); });
+
+// ===== クイズ =====
+let quizList = [], quizIdx = 0, quizScore = 0, quizAnswered = false;
+
+function shuffle(arr) { return [...arr].sort(()=>Math.random()-0.5); }
+
+function startQuiz() {
+  quizList = shuffle([...people]);
+  quizIdx = 0; quizScore = 0;
+  renderQuiz();
+}
+
+function renderQuiz() {
+  if (quizIdx >= quizList.length) {
+    document.getElementById("quiz-q").textContent = "お疲れ様でした！";
+    document.getElementById("quiz-hint").textContent = `最終スコア: ${quizScore} / ${quizList.length} 問正解`;
+    document.getElementById("quiz-opts").innerHTML = `<button class="restart-btn" onclick="startQuiz()">もう一度チャレンジ</button>`;
+    document.getElementById("next-btn").style.display = "none";
+    document.getElementById("quiz-counter").textContent = "完了";
+    document.getElementById("progress-fill").style.width = "100%";
+    return;
+  }
+  quizAnswered = false;
+  const person = quizList[quizIdx];
+  const wrongs = shuffle(people.filter(p=>p.name!==person.name)).slice(0,3).map(p=>p.name);
+  const opts = shuffle([person.name, ...wrongs]);
+
+  document.getElementById("quiz-counter").textContent = `${quizIdx+1} / ${quizList.length}`;
+  document.getElementById("quiz-q").textContent = person.role;
+  document.getElementById("quiz-hint").textContent = `所属: ${person.org}`;
+  document.getElementById("progress-fill").style.width = (quizIdx/quizList.length*100)+"%";
+  document.getElementById("quiz-score-text").textContent = `正解: ${quizScore}`;
+  document.getElementById("next-btn").style.display = "none";
+
+  const optsEl = document.getElementById("quiz-opts");
+  optsEl.innerHTML = "";
+  opts.forEach(name => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-opt";
+    btn.textContent = name;
+    btn.addEventListener("click", () => {
+      if (quizAnswered) return;
+      quizAnswered = true;
+      if (name === person.name) { btn.classList.add("correct"); quizScore++; }
+      else {
+        btn.classList.add("wrong");
+        optsEl.querySelectorAll(".quiz-opt").forEach(b => { if (b.textContent===person.name) b.classList.add("correct"); });
+      }
+      document.getElementById("quiz-score-text").textContent = `正解: ${quizScore}`;
+      document.getElementById("next-btn").style.display = "inline-block";
+    });
+    optsEl.appendChild(btn);
+  });
+}
+
+document.getElementById("next-btn").addEventListener("click", () => { quizIdx++; renderQuiz(); });
+
+// モード切替
+document.getElementById("btn-card").addEventListener("click", () => {
+  document.getElementById("card-mode").style.display = "";
+  document.getElementById("quiz-mode").style.display = "none";
+  document.getElementById("btn-card").classList.add("active");
+  document.getElementById("btn-quiz").classList.remove("active");
+});
+document.getElementById("btn-quiz").addEventListener("click", () => {
+  document.getElementById("card-mode").style.display = "none";
+  document.getElementById("quiz-mode").style.display = "";
+  document.getElementById("btn-quiz").classList.add("active");
+  document.getElementById("btn-card").classList.remove("active");
+  startQuiz();
+});
+
+renderCards();
+</script>
+</body>
+</html>
